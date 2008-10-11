@@ -14,11 +14,13 @@ In a nutshell:
 
   require 'fuzzy_file_finder'
 
-  finder = FuzzyFileFinder.new
+  finder = FuzzyFileFinder.new  # search under current working directory
 
   finder.search "app/blogcon" do |match|
     puts "[%5d] %s" % [match[:score] * 10000, match[:highlighted_path]]
   end
+  
+  finder = FuzzyFileFinder.new("/my/project")  # search under this directory
 
   matches = finder.find("app/blogcon").sort_by { |m| [-m[:score], m[:path] }
   matches.each do |match|

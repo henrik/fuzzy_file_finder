@@ -19,11 +19,11 @@
 #     puts match[:highlighted_path]
 #   end
 #
-# In the above example, all files matching "app/blogcon" will be
-# yielded to the block. The given pattern is reduced to a regular
-# expression internally, so that any file that contains those
-# characters in that order (even if there are other characters
-# in between) will match.
+# In the above example, all files under the current directory
+# matching "app/blogcon" will be yielded to the block. The given
+# pattern is reduced to a regular expression internally, so that 
+# any file that contains those characters in that order (even if
+# there are other characters in between) will match.
 # 
 # In other words, "app/blogcon" would match any of the following
 # (parenthesized strings indicate how the match was made):
@@ -33,6 +33,12 @@
 # * test/(app)/(blog)_(con)troller_test.rb
 #
 # And so forth.
+#
+# To search another directory than the current working directory,
+# pass it to the FuzzyFileFinder initializer:
+#
+#   finder = FuzzyFileFinder.new("/my/project")
+#
 class FuzzyFileFinder
   module Version
     MAJOR = 1
