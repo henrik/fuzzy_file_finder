@@ -105,7 +105,9 @@ class FuzzyFileFinder
   # of entries to scan. If there are more than +ceiling+ entries
   # a TooManyEntries exception will be raised.
   def initialize(directory=".", ceiling=10_000)
-    @root = Directory.new(directory)
+    # Work with directory as "." so the full path is not searched
+    @given_root = directory
+    @root = Directory.new('.')
     @ceiling = ceiling
     rescan!
   end
@@ -114,10 +116,13 @@ class FuzzyFileFinder
   # you'll need to call this to force the finder to be aware of
   # the changes.
   def rescan!
-    root.children.clear
-    @file_count = 0
-    @directory_count = 0
-    follow_tree(root.name, root)
+    Dir.chdir(@given_root) do
+      @abs_root = Dir.pwd
+      root.children.clear
+      @file_count = 0
+      @directory_count = 0
+      follow_tree(root.name, root)
+    end
   end
 
   # Takes the given +pattern+ (which must be a string) and searches
@@ -138,14 +143,16 @@ class FuzzyFileFinder
   #
   # Each yielded match will be a hash containing the following keys:
   #
-  # * :path refers to the full path to the file
+  # * :absolute_path refers to the full, absolute path to the file
+  # * :path refers to the path to the file relative to the search 
+  #   directory
   # * :directory refers to the directory of the file
   # * :name refers to the name of the file (without directory)
   # * :highlighted_directory refers to the directory of the file with
   #   matches highlighted in parentheses.
   # * :highlighted_name refers to the name of the file with matches
   #   highlighted in parentheses
-  # * :highlighted_path refers to the full path of the file with
+  # * :highlighted_path refers to the relative path of the file with
   #   matches highlighted in parentheses
   # * :abbr refers to an abbreviated form of :highlighted_path, where
   #   path segments without matches are compressed to just their first
@@ -298,6 +305,7 @@ class FuzzyFileFinder
           abbr = File.join(highlighted_directory.gsub(/[^\/]+/) { |m| m.index("(") ? m : m[0,1] }, match_result[:result])
 
           result = { :path => full,
+                     :absolute_path => File.join(@abs_root, full),
                      :abbr => abbr,
                      :directory => under.name,
                      :name => entry.name,
